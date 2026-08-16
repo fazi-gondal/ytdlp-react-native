@@ -20,7 +20,7 @@ config.resolver.nodeModulesPaths = [
 ];
 
 config.resolver.extraNodeModules = {
-  'expo-yt-dlp': '..',
+  'expo-ytdlp-native': '..',
 };
 
 config.watchFolders = [path.resolve(__dirname, '..')];

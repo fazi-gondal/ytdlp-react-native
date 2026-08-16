@@ -1,9 +1,18 @@
 {
-  "name": "expo-yt-dlp",
-  "version": "1.0.0",
-  "description": "A yt-dlp wrapped expo native module",
+  "name": "expo-ytdlp-native",
+  "version": "0.1.0",
+  "description": "A native Android Expo module providing a TypeScript API around yt-dlp.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "files": [
+    "android",
+    "build",
+    "src",
+    "expo-module.config.json",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build": "node internal/module_scripts/build.js",
     "clean": "node internal/module_scripts/clean.js",
@@ -19,7 +28,10 @@
     "expo-yt-dlp",
     "ExpoYtDlp"
   ],
-  "repository": "https://github.com/devusimple/expo-yt-dlp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devusimple/expo-yt-dlp.git"
+  },
   "bugs": {
     "url": "https://github.com/devusimple/expo-yt-dlp/issues"
   },
@@ -49,6 +61,7 @@
   },
   "peerDependencies": {
     "expo": "*",
+    "expo-modules-core": "*",
     "react": "*",
     "react-native": "*"
   }

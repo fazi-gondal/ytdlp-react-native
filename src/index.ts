@@ -1,4 +1,17 @@
-// Reexport the native module. On web, it will be resolved to ExpoYtDlpModule.web.ts
-// and on native platforms to ExpoYtDlpModule.ts
-export { default } from './ExpoYtDlpModule';
-export * from './ExpoYtDlp.types';
+import { cancel, download, extractInfo, getFormats, getVersion } from './YtDlp';
+import { YtDlpError } from './errors';
+
+export type * from './types';
+
+/** Main SDK facade. */
+export const YtDlp = {
+  getVersion,
+  extractInfo,
+  getFormats,
+  download,
+  cancel,
+};
+
+export { YtDlpError };
+
+export default YtDlp;

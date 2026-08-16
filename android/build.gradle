@@ -8,11 +8,18 @@ version = '0.1.0'
 
 android {
   namespace "expo.modules.ytdlp"
+  compileSdk 35
   defaultConfig {
+    minSdk 24
     versionCode 1
     versionName "0.1.0"
   }
   lintOptions {
     abortOnError false
   }
+}
+
+dependencies {
+  // yt-dlp embedded via Chaquopy. Pinned exact version (see AGENTS.md §59).
+  implementation 'dev.ffmpegkit-maintained:yt-dlp-android:2.0.2'
 }

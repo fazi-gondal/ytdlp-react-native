@@ -3,8 +3,8 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "expo-yt-dlp": ["../src/index"],
-      "expo-yt-dlp/*": ["../src/*"]
+      "expo-ytdlp-native": ["../src/index"],
+      "expo-ytdlp-native/*": ["../src/*"]
     }
   }
 }

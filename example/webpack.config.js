@@ -6,7 +6,7 @@ module.exports = async (env, argv) => {
     {
       ...env,
       babel: {
-        dangerouslyAddModulePathsToTranspile: ['expo-yt-dlp'],
+        dangerouslyAddModulePathsToTranspile: ['expo-ytdlp-native'],
       },
     },
     argv
