@@ -204,7 +204,10 @@ internal object YtDlpEngine {
       val builtins = py.getBuiltins()
       val ns = builtins.callAttr("dict")
       builtins.callAttr("exec", DOWNLOAD_HELPER_SCRIPT, ns, ns)
-      ns.get("execute")!!
+      // `ns` is a dict, so `execute` is an *item*, not an attribute: `PyObject.get`
+      // (attribute access) would return null. Use the container view instead.
+      ns.asMap()[PyObject.fromJava("execute")]
+        ?: throw YtDlpNativeException("INIT_FAILED", "The download helper is unavailable.")
     }
   }
 

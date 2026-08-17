@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-17
+
+### Fixed
+
+- Downloads no longer fail with `Download failed: null`. The Python `execute`
+  helper was fetched from the exec namespace with attribute access
+  (`PyObject.get`) even though it is a dict item; the downloader now uses
+  container access (`ns.asMap()`), which makes `YtDlp.download(...)` work.
+
+## [0.1.2] - 2026-08-17
+
+### Fixed
+
+- Chaquopy 17 does not convert Java maps/lists to Python dicts/lists
+  automatically. Download and extraction options are now converted explicitly
+  so yt-dlp receives real Python containers.
+
+## [0.1.1] - 2026-08-17
+
+### Fixed
+
+- Progress events now arrive through the native event emitter
+  (`module.addListener`), matching Expo SDK 52+ modules, instead of RN's
+  `NativeEventEmitter`.
+
 ## [0.1.0] - 2026-08-16
 
 ### Added

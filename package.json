@@ -1,6 +1,6 @@
 {
   "name": "expo-ytdlp-native",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A native Android Expo module providing a TypeScript API around yt-dlp.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
