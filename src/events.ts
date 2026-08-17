@@ -1,8 +1,6 @@
 /**
  * Shared helpers for reacting to native `downloadEvent` emissions.
  */
-import { EventSubscription, NativeEventEmitter } from 'react-native';
-
 import { NativeExpoYtDlp } from './ExpoYtDlpModule';
 import { fromNativeCode, type YtDlpError } from './errors';
 import type {
@@ -34,17 +32,16 @@ export function subscribeToDownloadEvents(handler: (event: DownloadEvent) => voi
   if (!NativeExpoYtDlp) {
     return { remove: () => {} };
   }
-  const emitter = new NativeEventEmitter(NativeExpoYtDlp);
-  const subscription: EventSubscription = emitter.addListener(
-    EVENT_NAME,
-    (event: DownloadEvent) => {
-      try {
-        handler(normalizeEvent(event));
-      } catch {
-        // Never let a listener crash the JS runtime.
-      }
+  // The native module is itself an EventEmitter (Expo SDK 52+); the old
+  // `new NativeEventEmitter(module)` path requires `addListener`/`removeListeners`
+  // that Expo modules do not expose.
+  const subscription = NativeExpoYtDlp.addListener(EVENT_NAME, (event: DownloadEvent) => {
+    try {
+      handler(normalizeEvent(event));
+    } catch {
+      // Never let a listener crash the JS runtime.
     }
-  );
+  });
   return { remove: () => subscription.remove() };
 }
 

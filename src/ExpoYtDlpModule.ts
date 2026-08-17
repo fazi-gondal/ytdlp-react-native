@@ -25,16 +25,16 @@ export interface DownloadStatusInfo {
   filename?: string;
 }
 
-export interface ExpoYtDlpNativeModule extends NativeModule<{
+export type ExpoYtDlpModuleEvents = {
   downloadEvent: (event: DownloadEvent) => void;
-}> {
+};
+
+export declare class ExpoYtDlpNativeModule extends NativeModule<ExpoYtDlpModuleEvents> {
   getVersion(): Promise<string>;
   extractInfo(url: string, options: Record<string, unknown>): Promise<string>;
   startDownload(options: Record<string, unknown>): Promise<DownloadTaskInfo>;
   cancelDownload(taskId: string): Promise<boolean>;
   getDownloadStatus(taskId: string): Promise<DownloadStatusInfo | null>;
-  addListener(eventType: string): void;
-  removeListeners(count: number): void;
 }
 
 export const NativeExpoYtDlp: ExpoYtDlpNativeModule | null =
