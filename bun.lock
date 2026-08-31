@@ -20,6 +20,7 @@
       },
       "peerDependencies": {
         "expo": "*",
+        "expo-modules-core": "*",
         "react": "*",
         "react-native": "*",
       },

@@ -1,4 +1,4 @@
-# expo-ytdlp-native
+# ytdlp-react-native
 
 A native **Android** Expo module providing a modern TypeScript API around
 [yt-dlp](https://github.com/yt-dlp/yt-dlp). It embeds the Python runtime,
@@ -8,7 +8,7 @@ library — no Python, yt-dlp, Chaquopy, FFmpeg or Termux setup is required in
 your app.
 
 ```ts
-import YtDlp from 'expo-ytdlp-native';
+import YtDlp from 'ytdlp-react-native';
 
 const info = await YtDlp.extractInfo('https://www.youtube.com/watch?v=...');
 console.log(info.title);
@@ -45,14 +45,14 @@ await task.cancel();
 ## Installation
 
 ```bash
-npx expo install expo-ytdlp-native
+npx expo install ytdlp-react-native
 ```
 
 If `expo install` does not resolve the package (e.g. before it is indexed),
 fall back to:
 
 ```bash
-npm install expo-ytdlp-native
+npm install ytdlp-react-native
 ```
 
 ## Usage
@@ -60,7 +60,7 @@ npm install expo-ytdlp-native
 ### Extract media information
 
 ```ts
-import YtDlp from 'expo-ytdlp-native';
+import YtDlp from 'ytdlp-react-native';
 
 const info = await YtDlp.extractInfo(url);
 console.log(info.title);   // string | undefined
@@ -199,7 +199,7 @@ All failures normalize to `YtDlpError` with a `code`:
 `STORAGE_ERROR`, `INIT_FAILED`, `UNSUPPORTED_PLATFORM`, `UNKNOWN`.
 
 ```ts
-import { YtDlpError } from 'expo-ytdlp-native';
+import { YtDlpError } from 'ytdlp-react-native';
 
 try {
   await YtDlp.extractInfo(url);
@@ -240,7 +240,7 @@ is an absolute path inside your app's own storage.
 
 ## Legal & responsible use
 
-`expo-ytdlp-native` is a technical wrapper around yt-dlp. It does not circumvent
+`ytdlp-react-native` is a technical wrapper around yt-dlp. It does not circumvent
 DRM (Widevine, FairPlay, PlayReady, ...), bypass authentication, or access
 private or unauthorized content — content that requires DRM or authentication
 will fail with an error.
@@ -259,7 +259,7 @@ download.
 
 | Component | License |
 | --- | --- |
-| `expo-ytdlp-native` (this package) | MIT |
+| `ytdlp-react-native` (this package) | MIT |
 | `yt-dlp-android` (Maven `dev.ffmpegkit-maintained:yt-dlp-android`) | MIT |
 | [yt-dlp](https://github.com/yt-dlp/yt-dlp) | Unlicense |
 | [Chaquopy](https://chaquo.com/chaquopy/) | BSD-style (per the embedded distribution) |

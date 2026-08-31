@@ -17,7 +17,7 @@ coordinated before the vulnerability is disclosed publicly.
 
 ## Scope
 
-This policy covers the `expo-ytdlp-native` package and its example application.
+This policy covers the `ytdlp-react-native` package and its example application.
 The embedded third-party components (`yt-dlp-android`, yt-dlp, Chaquopy,
 Python) have their own security policies and distribution channels.
 

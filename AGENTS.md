@@ -1,12 +1,12 @@
 # AGENTS.md
 
-# Project: expo-yt-dlp
+# Project: ytdlp-react-native
 
 ## 0. Mission
 
 Build a production-quality, Android-first Expo/React Native native module named:
 
-`expo-yt-dlp`
+`ytdlp-react-native`
 
 The package will wrap the Android library:
 
@@ -97,7 +97,7 @@ The native library is the extraction engine.
 The developer experience should look approximately like this:
 
 ```ts
-import YtDlp from "expo-yt-dlp";
+import YtDlp from "ytdlp-react-native";
 
 const info = await YtDlp.extractInfo(url);
 
@@ -152,7 +152,7 @@ If imported on an unsupported platform, provide a meaningful error.
 Example:
 
 ```text
-expo-yt-dlp is currently supported on Android only.
+ytdlp-react-native is currently supported on Android only.
 ```
 
 The architecture should leave room for future iOS support, but do not implement iOS unless explicitly requested.
@@ -166,7 +166,7 @@ Create the project as a standalone Expo module.
 Preferred command:
 
 ```bash
-npx create-expo-module@latest expo-yt-dlp
+npx create-expo-module@latest ytdlp-react-native
 ```
 
 Choose:
@@ -187,7 +187,7 @@ The generated example application is part of the development/test workflow.
 Target structure:
 
 ```text
-expo-yt-dlp/
+ytdlp-react-native/
 │
 ├── android/
 │   └── src/
@@ -1245,7 +1245,7 @@ Public types must be exported from a single stable entry point.
 The package should allow:
 
 ```ts
-import YtDlp from "expo-yt-dlp";
+import YtDlp from "ytdlp-react-native";
 ```
 
 and optionally:
@@ -1257,7 +1257,7 @@ import {
   type Format,
   type DownloadOptions,
   type DownloadProgress,
-} from "expo-yt-dlp";
+} from "ytdlp-react-native";
 ```
 
 Keep the API discoverable.
@@ -1302,7 +1302,7 @@ ExpoYtDlp
 npm package:
 
 ```text
-expo-yt-dlp
+ytdlp-react-native
 ```
 
 Use explicit `Name("ExpoYtDlp")` in the Expo module definition.
@@ -1481,7 +1481,7 @@ Do not advertise "all sites supported".
 
 The README must clearly state that:
 
-`expo-yt-dlp` is a technical wrapper around yt-dlp.
+`ytdlp-react-native` is a technical wrapper around yt-dlp.
 
 Users are responsible for complying with:
 
@@ -1670,19 +1670,19 @@ The package must be a normal npm package.
 Expected usage:
 
 ```bash
-npm install expo-yt-dlp
+npm install ytdlp-react-native
 ```
 
 or:
 
 ```bash
-pnpm add expo-yt-dlp
+pnpm add ytdlp-react-native
 ```
 
 or:
 
 ```bash
-yarn add expo-yt-dlp
+yarn add ytdlp-react-native
 ```
 
 The consumer should then be able to run Expo prebuild/build normally.
@@ -1722,7 +1722,7 @@ README must contain:
 
 ## Title
 
-`expo-yt-dlp`
+`ytdlp-react-native`
 
 ## Description
 
@@ -1731,7 +1731,7 @@ A native Android Expo module providing a TypeScript API around yt-dlp.
 ## Installation
 
 ```bash
-npx expo install expo-yt-dlp
+npx expo install ytdlp-react-native
 ```
 
 If `expo install` is not appropriate for the package, document the correct npm command.
@@ -1802,7 +1802,7 @@ Do not tell users that plain Expo Go can load arbitrary custom native modules.
 The README should demonstrate:
 
 ```bash
-npx expo install expo-yt-dlp
+npx expo install ytdlp-react-native
 ```
 
 Then:
@@ -1821,7 +1821,7 @@ Use the current Expo documentation to adjust these commands if the recommended w
 README example:
 
 ```ts
-import YtDlp from "expo-yt-dlp";
+import YtDlp from "ytdlp-react-native";
 
 const info = await YtDlp.extractInfo(
   "https://www.youtube.com/watch?v=..."
@@ -2476,7 +2476,7 @@ Verify:
 ```text
 Expo project
     ↓
-npm install expo-yt-dlp
+npm install ytdlp-react-native
     ↓
 expo prebuild
     ↓
@@ -2498,7 +2498,7 @@ Use npm.
 Package should eventually be installable with:
 
 ```bash
-npm install expo-yt-dlp
+npm install ytdlp-react-native
 ```
 
 The package name must be checked for availability before publishing.
@@ -2515,7 +2515,7 @@ Ensure `package.json` includes appropriate:
 
 ```json
 {
-  "name": "expo-yt-dlp",
+  "name": "ytdlp-react-native",
   "version": "0.1.0",
   "description": "...",
   "main": "...",
@@ -2573,7 +2573,7 @@ Do not request sensitive information in public GitHub issues.
 Recommended repository:
 
 ```text
-expo-yt-dlp
+ytdlp-react-native
 ```
 
 Repository description:
@@ -2736,7 +2736,7 @@ works reliably on a real Android device.
 A user must be able to:
 
 ```ts
-import YtDlp from "expo-yt-dlp";
+import YtDlp from "ytdlp-react-native";
 
 const info = await YtDlp.extractInfo(url);
 
@@ -2855,7 +2855,7 @@ Only then proceed to the next stage.
 The package should be thought of as:
 
 ```text
-                 expo-yt-dlp
+                 ytdlp-react-native
                       │
         ┌─────────────┴─────────────┐
         │                           │
