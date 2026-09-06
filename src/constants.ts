@@ -1,7 +1,9 @@
 /**
  * Package-level constants.
  */
-export const LIBRARY_VERSION = '0.1.0';
+import pkg from '../package.json';
+
+export const LIBRARY_VERSION = pkg.version;
 
 export const SUPPORTED_PLATFORM = 'android';
 

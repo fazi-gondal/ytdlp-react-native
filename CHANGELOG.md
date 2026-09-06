@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `YtDlp.getVersion().library` now reports the version from `package.json`
+  instead of a hardcoded constant, so it can no longer drift out of sync.
+- `mapDownloadProgress` now actually returns `null` for non-object payloads
+  (the previous null guard was dead code because `asRecord` returned `{}`).
+- Extraction error classification now checks age restriction before
+  sign-in/auth, so messages like _Sign in to confirm your age_ map to
+  `AGE_RESTRICTED` instead of `AUTHENTICATION_REQUIRED`.
+
+### Added
+
+- Unit tests for the TypeScript layer (`errors`, `mappers`) so
+  `bun run test` runs and passes instead of failing with "No tests found".
+
+### Changed
+
+- Dev toolchain aligned to the documented support matrix: Expo SDK 57,
+  React Native 0.86, React 19.2, `babel-preset-expo` 57 and `jest-expo` 57.
+- `bun` is the package manager; `package-lock.json` is not used.
+
+## [1.0.0] - 2026-08-31
+
+### Changed
+
+- Package renamed from `expo-ytdlp-native` to `ytdlp-react-native` and
+  released as 1.0.0 with matching repository metadata and keywords.
+
 ## [0.1.3] - 2026-08-17
 
 ### Fixed

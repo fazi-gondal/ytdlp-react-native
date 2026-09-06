@@ -109,6 +109,9 @@ export function normalizeExtractionError(
   ) {
     return new YtDlpError('NETWORK_ERROR', base.message, { cause: base.cause });
   }
+  if (message.includes('age') || message.includes('mature') || message.includes('under 18')) {
+    return new YtDlpError('AGE_RESTRICTED', base.message, { cause: base.cause });
+  }
   if (
     message.includes('sign in to confirm') ||
     message.includes('log in') ||
@@ -118,9 +121,6 @@ export function normalizeExtractionError(
   }
   if (message.includes('private') || message.includes('members-only')) {
     return new YtDlpError('PRIVATE_CONTENT', base.message, { cause: base.cause });
-  }
-  if (message.includes('age') || message.includes('mature') || message.includes('under 18')) {
-    return new YtDlpError('AGE_RESTRICTED', base.message, { cause: base.cause });
   }
   if (
     message.includes('geographic') ||

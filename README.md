@@ -126,7 +126,7 @@ await YtDlp.cancel(taskId);
 
 ```ts
 const version = await YtDlp.getVersion();
-// { ytDlp: '2026.xx.xx', library: '0.1.0' }
+// { ytDlp: '2026.xx.xx', library: '1.0.0' }
 ```
 
 The embedded yt-dlp version and the npm package version are independent.

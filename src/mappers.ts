@@ -88,8 +88,8 @@ export function mapFormat(raw: unknown): Format {
  * `DownloadProgress`, replacing any non-finite numbers with `undefined`.
  */
 export function mapDownloadProgress(raw: unknown, taskId: string): DownloadProgress | null {
-  const progress = asRecord(raw);
-  if (!progress) return null;
+  if (typeof raw !== 'object' || raw === null) return null;
+  const progress = raw as RawRecord;
 
   const percent = numberOf(progress.percent);
   const phaseRaw = stringOf(progress.phase);

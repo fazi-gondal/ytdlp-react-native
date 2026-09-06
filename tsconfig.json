@@ -15,6 +15,7 @@
     "inlineSources": true,
     "skipLibCheck": true,
     "strict": true,
+    "resolveJsonModule": true,
     "noFallthroughCasesInSwitch": true,
     "noPropertyAccessFromIndexSignature": false,
     "noImplicitReturns": true,
