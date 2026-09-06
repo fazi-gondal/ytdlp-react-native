@@ -1,4 +1,4 @@
-# ytdlp-react-native
+### ytdlp-react-native
 
 A native **Android** Expo module providing a modern TypeScript API around
 [yt-dlp](https://github.com/yt-dlp/yt-dlp). It embeds the Python runtime,
@@ -16,7 +16,7 @@ console.log(info.formats);
 
 const task = await YtDlp.download({
   url: 'https://www.youtube.com/watch?v=...',
-  format: 'bestvideo+bestaudio',
+  format: 'best', // prefer a single progressive stream (no FFmpeg merge)
   output: { directory: 'Movies' },
 });
 
@@ -85,7 +85,7 @@ const formats = await YtDlp.getFormats(url);
 ```ts
 const task = await YtDlp.download({
   url,
-  format: 'bestvideo+bestaudio', // raw yt-dlp format expression
+  format: 'best', // or 'bestaudio', 'best[height<=720]', etc.
   output: {
     directory: 'Movies',
     filename: '%(title)s.%(ext)s',
@@ -165,6 +165,28 @@ rejected up front with `PROCESSING_FAILED` rather than silently ignored:
 Use `format: 'best'` or `format: 'bestaudio'` and download a single stream
 that requires no post-processing.
 
+## Instagram, TikTok and other social sites
+
+yt-dlp supports Instagram (posts, Reels, many stories) and TikTok, among
+hundreds of other sites. Because this package has **no FFmpeg**, you must
+request a **single progressive stream**:
+
+```ts
+format: 'best'               // preferred
+// or
+format: 'best[height<=1080]'
+format: 'bestaudio'
+```
+
+Many Instagram Reels and TikTok videos already provide combined progressive
+MP4 streams, so downloads often work without extra processing. If the only
+high-quality options are separate video + audio streams, the download will
+fail with `PROCESSING_FAILED`.
+
+**Cookies tip:** Instagram almost always requires a valid logged-in session
+(Netscape cookies file via `cookies.path`). TikTok sometimes needs them too
+for full reliability.
+
 ## Download task
 
 A `DownloadTask` exposes:
@@ -227,16 +249,42 @@ is an absolute path inside your app's own storage.
 
 ## Limitations
 
-- Android only.
-- No FFmpeg-based post-processing (see "Not supported" above).
-- No background/foreground service: downloads pause if the JS/native runtime
-  is destroyed. Persisting task IDs lets you re-issue cancellation later.
+- **Android only.**
+- **No FFmpeg-based post-processing** (see "Not supported" above). Merging
+  separate video + audio streams is not possible out of the box.
+- **No background/foreground service:** downloads pause if the JS/native
+  runtime is destroyed. Persisting task IDs lets you re-issue cancellation later.
 - yt-dlp site support changes frequently. Not every website works forever,
   and not every site provides every field.
 - This package does **not** bundle or provide a way to update the embedded
   yt-dlp at runtime.
 - Playlists are opt-in via `playlist.enabled` to avoid accidental bulk
   downloads.
+
+## Recommended production stack
+
+`ytdlp-react-native` focuses on reliable extraction and downloading of single
+streams. For a complete video-downloader experience you will usually combine
+it with three complementary libraries:
+
+| Concern | Package | Link |
+|---------|---------|------|
+| Long-running background downloads with system progress UI | **react-native-continued-task** | [GitHub](https://github.com/mahdidavoodi7/react-native-continued-task) |
+| Merge video+audio, re-encode, burn subtitles, etc. | **munim-ffmpeg** | [GitHub](https://github.com/munimtechnologies/munim-ffmpeg) |
+| Save finished files to the public Media Library / Gallery | **expo-media-library** | [Expo docs](https://docs.expo.dev/versions/latest/sdk/media-library/) |
+
+### Suggested flow
+
+1. Start a continued background task with `react-native-continued-task`
+   (shows Live Activity on iOS 26+ / foreground-service notification on Android).
+2. Download with `ytdlp-react-native` using a single-stream format (`best` /
+   `bestaudio`). Report progress back to the continued task.
+3. (Optional) If you need to merge separate streams or perform other
+   post-processing, use `munim-ffmpeg`.
+4. Move the final file into the user’s public gallery with `expo-media-library`.
+
+All three packages (plus this one) require a **development build** — they do
+not work inside Expo Go.
 
 ## Legal & responsible use
 
