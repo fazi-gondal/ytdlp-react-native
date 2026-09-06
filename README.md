@@ -1,4 +1,4 @@
-### ytdlp-react-native
+# ytdlp-react-native
 
 A native **Android** Expo module providing a modern TypeScript API around
 [yt-dlp](https://github.com/yt-dlp/yt-dlp). It embeds the Python runtime,
