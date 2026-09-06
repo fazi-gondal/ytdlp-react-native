@@ -133,6 +133,18 @@ internal object YtDlpEngine {
 
     (options["referer"] as? String)?.takeIf { it.isNotBlank() }?.let { opts["http_referer"] = it }
 
+    ffmpegLocationOf(options)?.let { location ->
+      if (!File(location).exists()) {
+        throw YtDlpNativeException(
+          "PROCESSING_FAILED",
+          "The FFmpeg binary at \"$location\" does not exist. Provide the path to an ffmpeg executable or a directory containing it.",
+        )
+      }
+      // yt-dlp accepts either the binary path or its containing directory, so
+      // the caller's value is passed through unchanged.
+      opts["ffmpeg_location"] = location
+    }
+
     val playlist = options["playlist"] as? Map<*, *>
     if (playlist?.get("enabled") != true) opts["noplaylist"] = true
     (playlist?.get("start") as? Number)?.takeIf { it.toInt() > 0 }?.let { opts["playliststart"] = it.toInt() }
@@ -153,27 +165,40 @@ internal object YtDlpEngine {
     return opts
   }
 
-  /** Anything we cannot honestly support is rejected up front (AGENTS.md §19). */
+  /**
+   * Rejects FFmpeg-dependent features up front when no FFmpeg binary is
+   * available (AGENTS.md §19). When the caller supplies `ffmpeg.location`,
+   * these features are handed to yt-dlp instead of being refused.
+   */
   private fun rejectUnsupportedFeatures(options: Map<String, Any?>) {
+    if (ffmpegLocationOf(options) != null) return
     if (options["merge"] == true) {
       throw YtDlpNativeException(
         "PROCESSING_FAILED",
-        "Merging video and audio requires FFmpeg, which is not bundled with yt-dlp-android.",
+        "Merging video and audio requires FFmpeg, which is not bundled. " +
+          "Provide an ffmpeg executable via the `ffmpeg.location` download option.",
       )
     }
     val audio = options["audio"] as? Map<*, *>
     if (audio?.get("only") == true || audio?.get("format") != null || audio?.get("quality") != null) {
       throw YtDlpNativeException(
         "PROCESSING_FAILED",
-        "Audio extraction and re-encoding require FFmpeg, which is not bundled with yt-dlp-android.",
+        "Audio extraction and re-encoding require FFmpeg. " +
+          "Provide an ffmpeg executable via the `ffmpeg.location` download option.",
       )
     }
     if (options["metadata"] != null || options["thumbnail"] != null) {
       throw YtDlpNativeException(
         "PROCESSING_FAILED",
-        "Metadata and thumbnail embedding are not supported in this version.",
+        "Metadata and thumbnail embedding require FFmpeg. " +
+          "Provide an ffmpeg executable via the `ffmpeg.location` download option.",
       )
     }
+  }
+
+  private fun ffmpegLocationOf(options: Map<String, Any?>): String? {
+    val ffmpeg = options["ffmpeg"] as? Map<*, *>
+    return (ffmpeg?.get("location") as? String)?.trim()?.takeIf { it.isNotEmpty() }
   }
 
   private fun classifyDownloadFailure(message: String): String {

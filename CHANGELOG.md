@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Optional FFmpeg support via the new `ffmpeg.location` download option.
+  Point it at an `ffmpeg` executable on the device (the package does not
+  bundle one) and `bestvideo+bestaudio` merging, audio extraction /
+  re-encoding, and metadata/thumbnail embedding become available instead of
+  being rejected with `PROCESSING_FAILED`.
+- Unit tests for the download/extract option serializers.
+
 ### Fixed
 
 - `YtDlp.getVersion().library` now reports the version from `package.json`

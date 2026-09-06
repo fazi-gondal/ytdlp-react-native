@@ -106,6 +106,21 @@ export interface NetworkOptions {
   retries?: number;
 }
 
+/**
+ * Optional FFmpeg integration (see issue #2). The package does **not** bundle
+ * FFmpeg — yt-dlp needs a real executable to merge separate video+audio
+ * streams (`bestvideo+bestaudio`), extract/re-encode audio, or embed metadata
+ * and thumbnails. Point `location` at an ffmpeg binary already on the device.
+ */
+export interface FfmpegOptions {
+  /**
+   * Absolute filesystem path to an `ffmpeg` executable, or to a directory
+   * that contains one. yt-dlp spawns the binary from here during
+   * post-processing. An in-process JNI wrapper (e.g. FFmpegKit) is not enough.
+   */
+  location: string;
+}
+
 export interface PlaylistOptions {
   enabled?: boolean;
   start?: number;
@@ -127,7 +142,17 @@ export interface DownloadOptions {
   /** Raw yt-dlp format expression, e.g. `best`, `bestvideo+bestaudio`. */
   format?: string;
   output?: OutputOptions;
+  /**
+   * Set to `true` to request merging (e.g. with `format: 'bestvideo+bestaudio'`).
+   * Merging requires FFmpeg — see `ffmpeg`.
+   */
   merge?: boolean;
+  /**
+   * Optional FFmpeg integration. When unset, FFmpeg-dependent features are
+   * rejected with `PROCESSING_FAILED`. When set, `bestvideo+bestaudio` and
+   * other post-processing become available.
+   */
+  ffmpeg?: FfmpegOptions;
   subtitles?: SubtitleOptions;
   cookies?: CookieOptions;
   /** Additional HTTP headers. Validated; secrets are never logged. */
