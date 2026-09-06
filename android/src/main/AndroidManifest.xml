@@ -1,2 +1,21 @@
-<manifest>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Foreground-service promotion for active downloads (issue #3).
+       Normal permissions: granted automatically at install time. -->
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <!-- Required on API 34+ for the dataSync foreground-service type. -->
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+  <!-- Partial wake lock keeps screen-off downloads moving. -->
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+  <!-- Note: POST_NOTIFICATIONS is intentionally *not* declared here. It is a
+       dangerous permission that the host app must request at runtime on
+       API 33+ if it wants the progress notification to be visible. The
+       service still runs without it; the notification is then suppressed. -->
+
+  <application>
+    <service
+      android:name="expo.modules.ytdlp.YtDlpForegroundService"
+      android:exported="false"
+      android:foregroundServiceType="dataSync" />
+  </application>
 </manifest>

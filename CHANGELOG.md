@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Background downloads via a native foreground service** (issue #3).
+  While at least one download runs, the module promotes the process with a
+  `dataSync` foreground service showing live progress, a Cancel action
+  (stops all active downloads), and tap-to-reopen. A partial wake lock keeps
+  screen-off downloads moving. No new API: the service starts/stops
+  automatically with the active-run count, and `cancelAll()` backs the
+  notification action. Survives backgrounding, screen-off and swipe-away;
+  does not survive process death or reboot (tasks stay process-local).
+
 - **Pause and resume support** for downloads (issue #4). `DownloadTask` now
   exposes `pause(): Promise<boolean>` and `resume(): Promise<boolean>`, plus
   `YtDlp.pause(taskId)` / `YtDlp.resume(taskId)`. Pause aborts the download

@@ -268,6 +268,43 @@ How it works:
 `pause()`/`resume()` are process-local and do not survive native restarts
 (see "Limitations").
 
+## Background downloads
+
+While at least one download is running, the module promotes the app with a
+native Android **foreground service** (`dataSync` type), so downloads keep
+going when the app is backgrounded, the screen is off, or the app is swiped
+away. No opt-in needed — starting a download shows an ongoing notification
+with live progress and a **Cancel** action (cancels all active downloads);
+tapping the notification reopens the app. When the last download finishes
+(or fails / is cancelled), the service stops and the notification goes away.
+
+```ts
+const task = await YtDlp.download({ url });
+// app backgrounded here — the download continues
+task.addListener('progress', (p) => console.log(p.percent));
+```
+
+What it does and does not cover:
+
+- **Survives:** backgrounding, screen off, task swipe-away.
+- **Does not survive:** the process being killed by the system, device
+  reboot, or a native restart. Tasks are process-local: after a restart,
+  re-issue downloads (and consider `pause()`/`resume()` semantics for
+  partial files left on disk).
+- The service holds a partial wake lock while active, so screen-off
+  downloads are not stalled by CPU sleep.
+- On Android 13+ the host app should request the `POST_NOTIFICATIONS`
+  runtime permission, otherwise the progress notification is suppressed
+  (the download still runs).
+- On Android 15+, the system may time-box `dataSync` foreground services
+  (around 6 hours); multi-hour downloads can be stopped by the OS.
+- Cancellation from the notification stops every active download; per-task
+  control stays in the app UI via `task.cancel()`.
+
+`react-native-continued-task` (see below) remains a complementary option if
+you also want WorkManager-backed scheduling or system progress UI beyond
+this built-in service.
+
 ## Errors
 
 All failures normalize to `YtDlpError` with a `code`:
@@ -311,8 +348,10 @@ is an absolute path inside your app's own storage.
   post-processing only work when you supply an ffmpeg executable via
   `ffmpeg.location` (see "FFmpeg support"). Without it, those features are
   rejected with `PROCESSING_FAILED`.
-- **No background/foreground service:** downloads pause if the JS/native
-  runtime is destroyed. Per-process pause/resume does not survive a native
+- **Background execution is best-effort within a live process.** Active
+  downloads run under a `dataSync` foreground service (see "Background
+  downloads"), but downloads do not survive the process being killed or the
+  device rebooting. Per-process pause/resume does not survive a native
   restart. Persisting task IDs lets you re-issue cancellation later.
 - yt-dlp site support changes frequently. Not every website works forever,
   and not every site provides every field.
@@ -348,6 +387,11 @@ it with three complementary libraries:
 
 All three packages (plus this one) require a **development build** — they do
 not work inside Expo Go.
+
+> Note: basic background continuity (foreground service + progress
+> notification + cancel) is built into `ytdlp-react-native` (see "Background
+> downloads"). Reach for `react-native-continued-task` when you additionally
+> want WorkManager-backed scheduling or richer system UI.
 
 ## Legal & responsible use
 

@@ -18,17 +18,32 @@ import java.util.concurrent.Executors
  * continues from the partial file by default (`--continue`), so no extra
  * options are needed. a [runGeneration] counter per task ensures a stale
  * runner thread (the one that just paused) can never overwrite the fresh run.
+ *
+ * Background execution (issue #3, AGENTS.md §38): while at least one run is
+ * active the manager promotes the process with [YtDlpForegroundService]
+ * (type `dataSync`) and feeds it progress for the ongoing notification. When
+ * the last run ends the service is stopped again.
  */
 internal class YtDlpDownloadManager(
   private val context: Context,
   private val onEvent: (Map<String, Any>) -> Unit,
 ) {
 
+  private val appContext: Context = context.applicationContext
   private val tasks = ConcurrentHashMap<String, YtDlpTask>()
   private val resumeOptions = ConcurrentHashMap<String, Map<String, Any?>>()
   private val executor: ExecutorService = Executors.newCachedThreadPool()
 
+  /** Runs currently executing on a background thread. Guarded by `this`. */
+  @Volatile
+  private var activeRuns = 0
+
+  init {
+    YtDlpForegroundService.setManager(this)
+  }
+
   /** Creates, registers and starts a download. Returns the public task info. */
+  @Synchronized
   fun start(options: Map<String, Any?>): Map<String, Any> {
     YtDlpEngine.ensureInitialized(context)
 
@@ -43,7 +58,7 @@ internal class YtDlpDownloadManager(
     val task = YtDlpTask(
       id = UUID.randomUUID().toString(),
       outputDirectory = outputDirectory,
-      onEvent = onEvent,
+      onEvent = ::emit,
     )
 
     val generation = task.beginRun()
@@ -52,6 +67,7 @@ internal class YtDlpDownloadManager(
     task.setStatus(YtDlpStatus.EXTRACTING)
     task.emitState()
     executor.execute { runTask(task, outputDirectory, generation) }
+    runStarted()
     return mapOf("taskId" to task.id, "directory" to outputDirectory.absolutePath)
   }
 
@@ -78,6 +94,7 @@ internal class YtDlpDownloadManager(
     task.setStatus(YtDlpStatus.EXTRACTING)
     task.emitState()
     executor.execute { runTask(task, task.outputDirectory, generation) }
+    runStarted()
     return true
   }
 
@@ -91,9 +108,23 @@ internal class YtDlpDownloadManager(
     if (task.status == YtDlpStatus.PAUSED) {
       task.emitCancelled()
       releaseTask(task.id)
+      runFinished()
       return true
     }
     return task.requestCancel()
+  }
+
+  /**
+   * Cancel every registered download (notification Cancel action). Returns
+   * how many tasks were asked to stop.
+   */
+  @Synchronized
+  fun cancelAll(): Int {
+    var cancelled = 0
+    for (taskId in tasks.keys.toList()) {
+      if (cancel(taskId)) cancelled++
+    }
+    return cancelled
   }
 
   fun statusOf(taskId: String): Map<String, Any?>? {
@@ -112,6 +143,49 @@ internal class YtDlpDownloadManager(
 
   fun shutdown() {
     executor.shutdownNow()
+    synchronized(this) {
+      activeRuns = 0
+      tasks.clear()
+      resumeOptions.clear()
+    }
+    YtDlpForegroundService.setManager(null)
+    YtDlpForegroundService.stop(appContext)
+  }
+
+  /** Forwards native events to JS and mirrors progress into the notification. */
+  private fun emit(payload: Map<String, Any>) {
+    updateServiceNotification(payload)
+    onEvent(payload)
+  }
+
+  private fun updateServiceNotification(payload: Map<String, Any>) {
+    when (payload["type"]) {
+      "progress" -> {
+        val progress = payload["progress"] as? Map<*, *> ?: return
+        val percent = (progress["percent"] as? Number)?.toDouble()
+        val filename = (progress["filename"] as? String)?.substringAfterLast('/')
+        YtDlpForegroundService.update(activeRuns, percent, filename)
+      }
+      "state" -> {
+        if ((payload["status"] as? String) == "extracting") {
+          YtDlpForegroundService.update(activeRuns, null, "Extracting info")
+        }
+      }
+    }
+  }
+
+  private fun runStarted() {
+    activeRuns += 1
+    YtDlpForegroundService.start(appContext, activeRuns)
+  }
+
+  private fun runFinished() {
+    if (activeRuns > 0) activeRuns -= 1
+    if (activeRuns == 0) {
+      YtDlpForegroundService.stop(appContext)
+    } else {
+      YtDlpForegroundService.update(activeRuns, null, null)
+    }
   }
 
   private fun runTask(task: YtDlpTask, outputDirectory: File, generation: Int) {
@@ -119,6 +193,7 @@ internal class YtDlpDownloadManager(
     if (options == null) {
       synchronized(this) {
         if (task.runGeneration == generation) releaseTask(task.id)
+        runFinished()
       }
       return
     }
@@ -134,17 +209,24 @@ internal class YtDlpDownloadManager(
 
   private fun completeRun(task: YtDlpTask, generation: Int, outputDirectory: File) {
     synchronized(this) {
-      if (task.runGeneration != generation) return
+      if (task.runGeneration != generation) {
+        runFinished()
+        return
+      }
       val file = YtDlpFileUtil.findNewestFile(outputDirectory, task.startTime)
       val secured = file?.let { YtDlpFileUtil.ensureContained(it, outputDirectory) }
       task.emitCompleted(secured)
       releaseTask(task.id)
+      runFinished()
     }
   }
 
   private fun failRun(task: YtDlpTask, generation: Int, code: String, message: String) {
     synchronized(this) {
-      if (task.runGeneration != generation) return
+      if (task.runGeneration != generation) {
+        runFinished()
+        return
+      }
       when {
         // Cancel has priority over pause when both were requested.
         task.isCancelRequested() || code == "CANCELLED" -> {
@@ -161,6 +243,7 @@ internal class YtDlpDownloadManager(
           releaseTask(task.id)
         }
       }
+      runFinished()
     }
   }
 
