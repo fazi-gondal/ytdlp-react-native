@@ -115,6 +115,9 @@ internal object YtDlpEngine {
       if (task.isCancelRequested() || message.contains(CANCEL_SENTINEL)) {
         throw YtDlpNativeException("CANCELLED", "Download cancelled.")
       }
+      if (task.isPauseRequested() || message.contains(PAUSE_SENTINEL)) {
+        throw YtDlpNativeException("PAUSED", "Download paused.")
+      }
       throw YtDlpNativeException(classifyDownloadFailure(message), message, e)
     } catch (e: Exception) {
       throw YtDlpNativeException("DOWNLOAD_FAILED", "Download failed: ${e.message}", e)
@@ -273,6 +276,7 @@ internal object YtDlpEngine {
   }
 
 private const val CANCEL_SENTINEL = "YTDLP_CANCELLED"
+private const val PAUSE_SENTINEL = "YTDLP_PAUSED"
 
   /**
    * Drive the bundled yt-dlp directly. Importing is deferred so our first
@@ -283,6 +287,8 @@ private const val CANCEL_SENTINEL = "YTDLP_CANCELLED"
     def _expo_ytdlp_hook(task, d):
         if task.isCancelRequested():
             raise RuntimeError("YTDLP_CANCELLED")
+        if task.isPauseRequested():
+            raise RuntimeError("YTDLP_PAUSED")
         downloaded = int(d.get('downloaded_bytes') or 0)
         total = int(d.get('total_bytes') or d.get('total_bytes_estimate') or 0)
         speed = int(d.get('speed') or 0)

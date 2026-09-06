@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Pause and resume support** for downloads (issue #4). `DownloadTask` now
+  exposes `pause(): Promise<boolean>` and `resume(): Promise<boolean>`, plus
+  `YtDlp.pause(taskId)` / `YtDlp.resume(taskId)`. Pause aborts the download
+  cooperatively and keeps the task registered with the new `paused` status;
+  resume re-runs the same options and yt-dlp continues from the `.part` file
+  by default. A per-task run generation prevents stale runners from racing a
+  freshly resumed download.
 - Optional FFmpeg support via the new `ffmpeg.location` download option.
   Point it at an `ffmpeg` executable on the device (the package does not
   bundle one) and `bestvideo+bestaudio` merging, audio extraction /

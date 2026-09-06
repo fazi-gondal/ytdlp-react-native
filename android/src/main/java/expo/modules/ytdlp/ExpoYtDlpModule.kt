@@ -47,6 +47,14 @@ class ExpoYtDlpModule : Module() {
       manager().cancel(taskId)
     }
 
+    Function("pauseDownload") { taskId: String ->
+      manager().pause(taskId)
+    }
+
+    Function("resumeDownload") { taskId: String ->
+      manager().resume(taskId)
+    }
+
     Function("getDownloadStatus") { taskId: String ->
       manager().statusOf(taskId)
     }

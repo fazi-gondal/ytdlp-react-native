@@ -216,11 +216,13 @@ A `DownloadTask` exposes:
 
 - `id: string`
 - `cancel(): Promise<void>`
+- `pause(): Promise<boolean>`
+- `resume(): Promise<boolean>`
 - `getStatus(): Promise<DownloadStatus>`
 - `getProgress(): Promise<DownloadProgress | null>`
 - `addListener(event, listener): Subscription`
 
-Statuses: `queued | extracting | downloading | processing | completed |
+Statuses: `queued | extracting | downloading | processing | paused | completed |
 cancelled | failed`.
 
 Events:
@@ -233,6 +235,38 @@ Events:
 
 Progress events are throttled to ~200 ms and numeric fields are `undefined`
 when the value is unknown (never `NaN`).
+
+### Pause & resume
+
+```ts
+const task = await YtDlp.download({ url, format: 'bestvideo+bestaudio', ffmpeg: { location } });
+
+await task.pause();   // true — yt-dlp aborts on the next progress tick
+console.log(await task.getStatus()); // 'paused'
+
+await task.resume();  // true — same options re-run; continues from the .part file
+```
+
+`YtDlp.pause(taskId)` and `YtDlp.resume(taskId)` work the same way when you
+only have a task id (e.g. after app re-creation).
+
+How it works:
+
+- `pause()` cooperatively aborts the download from the progress hook. yt-dlp
+  leaves its `.part` file on disk, and the task stays registered with status
+  `paused` (so a paused task still exists; cancel it if you're done).
+- `resume()` re-runs the exact same download. yt-dlp continues by default
+  (`continue`): byte-range where the source server supports it, fragment-based
+  resumes (DASH/HLS) via the `.ytdl` sidecar. If a source does not support
+  continuing, yt-dlp restarts that file.
+- Both return `false` when the action is not applicable (unknown task, not
+  paused, already finished). Cancelling a paused task finalizes it immediately.
+- No network is consumed while paused, but the pause takes effect on the next
+  yt-dlp progress tick (~200 ms). Pausing does **not** cover the download's
+  extraction phase.
+
+`pause()`/`resume()` are process-local and do not survive native restarts
+(see "Limitations").
 
 ## Errors
 
@@ -278,7 +312,8 @@ is an absolute path inside your app's own storage.
   `ffmpeg.location` (see "FFmpeg support"). Without it, those features are
   rejected with `PROCESSING_FAILED`.
 - **No background/foreground service:** downloads pause if the JS/native
-  runtime is destroyed. Persisting task IDs lets you re-issue cancellation later.
+  runtime is destroyed. Per-process pause/resume does not survive a native
+  restart. Persisting task IDs lets you re-issue cancellation later.
 - yt-dlp site support changes frequently. Not every website works forever,
   and not every site provides every field.
 - This package does **not** bundle or provide a way to update the embedded

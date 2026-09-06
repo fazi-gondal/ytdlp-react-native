@@ -10,6 +10,7 @@ internal enum class YtDlpStatus {
   EXTRACTING,
   DOWNLOADING,
   PROCESSING,
+  PAUSED,
   COMPLETED,
   CANCELLED,
   FAILED,
@@ -46,12 +47,48 @@ internal class YtDlpTask(
   var startTime: Long = System.currentTimeMillis()
 
   private val cancelRequested = AtomicBoolean(false)
+  private val pauseRequested = AtomicBoolean(false)
+
+  /** Increments on every run (initial start and each resume); see AGENTS.md §4 lifecycle. */
+  @Volatile
+  var runGeneration = 0
+    private set
+
   internal val snapshot = ProgressSnapshot()
   private val lastEmit = AtomicLong(0L)
 
   fun isCancelRequested(): Boolean = cancelRequested.get()
 
   fun requestCancel(): Boolean = cancelRequested.compareAndSet(false, true)
+
+  fun isPauseRequested(): Boolean = pauseRequested.get()
+
+  /** Accepts the pause only while a run is actually in flight (not terminal, not already paused). */
+  fun requestPause(): Boolean {
+    val current = status
+    if (current == YtDlpStatus.COMPLETED || current == YtDlpStatus.CANCELLED ||
+      current == YtDlpStatus.FAILED || current == YtDlpStatus.PAUSED
+    ) {
+      return false
+    }
+    return pauseRequested.compareAndSet(false, true)
+  }
+
+  /**
+   * Prepares a fresh run (initial start or resume): bumps the generation so
+   * any stale runner thread stops touching the task, clears pause/cancel
+   * requests and error state, and restarts the completion clock.
+   */
+  @Synchronized
+  fun beginRun(): Int {
+    runGeneration += 1
+    pauseRequested.set(false)
+    cancelRequested.set(false)
+    errorCode = null
+    errorMessage = null
+    startTime = System.currentTimeMillis()
+    return runGeneration
+  }
 
   @Synchronized
   fun setStatus(newStatus: YtDlpStatus) {
@@ -70,7 +107,7 @@ internal class YtDlpTask(
     etaSeconds: Long,
     filename: String,
   ) {
-    if (cancelRequested.get()) return
+    if (cancelRequested.get() || pauseRequested.get()) return
     snapshot.update(downloadedBytes, totalBytes, speedBytesPerSecond, etaSeconds, filename)
     when {
       status == YtDlpStatus.QUEUED -> setStatus(YtDlpStatus.EXTRACTING)
@@ -94,6 +131,11 @@ internal class YtDlpTask(
     onEvent(cancelledPayload())
   }
 
+  fun emitPaused() {
+    setStatus(YtDlpStatus.PAUSED)
+    onEvent(statePayload())
+  }
+
   fun emitError(code: String, message: String) {
     errorCode = code
     errorMessage = message
@@ -111,7 +153,7 @@ internal class YtDlpTask(
 
   private fun phaseOf(): String = when (status) {
     YtDlpStatus.QUEUED, YtDlpStatus.EXTRACTING -> "extracting"
-    YtDlpStatus.DOWNLOADING -> "downloading"
+    YtDlpStatus.DOWNLOADING, YtDlpStatus.PAUSED -> "downloading"
     YtDlpStatus.PROCESSING, YtDlpStatus.COMPLETED -> "processing"
     YtDlpStatus.CANCELLED, YtDlpStatus.FAILED -> "downloading"
   }

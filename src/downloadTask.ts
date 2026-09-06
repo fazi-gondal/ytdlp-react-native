@@ -76,6 +76,14 @@ export class YtDlpDownloadTask implements DownloadTask {
     await this.native.cancelDownload(this.id);
   }
 
+  async pause(): Promise<boolean> {
+    return this.native.pauseDownload(this.id);
+  }
+
+  async resume(): Promise<boolean> {
+    return this.native.resumeDownload(this.id);
+  }
+
   async getStatus(): Promise<DownloadStatus> {
     if (this.finalized) return this.currentStatus;
     const info = await this.native.getDownloadStatus(this.id);
@@ -144,6 +152,7 @@ function mapStatusInfo(
 function phaseOf(status: DownloadStatus): DownloadProgress['phase'] {
   switch (status) {
     case 'downloading':
+    case 'paused':
       return 'downloading';
     case 'completed':
     case 'processing':

@@ -114,6 +114,7 @@ function statusOf(value: unknown): DownloadProgress['status'] {
     case 'extracting':
     case 'downloading':
     case 'processing':
+    case 'paused':
     case 'completed':
     case 'cancelled':
     case 'failed':

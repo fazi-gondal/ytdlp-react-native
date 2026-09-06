@@ -34,6 +34,8 @@ export declare class ExpoYtDlpNativeModule extends NativeModule<ExpoYtDlpModuleE
   extractInfo(url: string, options: Record<string, unknown>): Promise<string>;
   startDownload(options: Record<string, unknown>): Promise<DownloadTaskInfo>;
   cancelDownload(taskId: string): Promise<boolean>;
+  pauseDownload(taskId: string): Promise<boolean>;
+  resumeDownload(taskId: string): Promise<boolean>;
   getDownloadStatus(taskId: string): Promise<DownloadStatusInfo | null>;
 }
 

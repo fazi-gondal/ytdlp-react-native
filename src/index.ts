@@ -1,4 +1,4 @@
-import { cancel, download, extractInfo, getFormats, getVersion } from './YtDlp';
+import { cancel, download, extractInfo, getFormats, getVersion, pause, resume } from './YtDlp';
 import { YtDlpError } from './errors';
 
 export type * from './types';
@@ -10,6 +10,8 @@ export const YtDlp = {
   getFormats,
   download,
   cancel,
+  pause,
+  resume,
 };
 
 export { YtDlpError };

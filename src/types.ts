@@ -7,7 +7,14 @@
 import type { YtDlpError } from './errors';
 
 export type DownloadStatus =
-  'queued' | 'extracting' | 'downloading' | 'processing' | 'completed' | 'cancelled' | 'failed';
+  | 'queued'
+  | 'extracting'
+  | 'downloading'
+  | 'processing'
+  | 'paused'
+  | 'completed'
+  | 'cancelled'
+  | 'failed';
 
 export type DownloadPhase = 'extracting' | 'downloading' | 'processing';
 
@@ -213,6 +220,20 @@ export interface Subscription {
 export interface DownloadTask {
   id: string;
   cancel(): Promise<void>;
+  /**
+   * Pause an in-flight download. yt-dlp aborts on the next progress tick and
+   * leaves its `.part` file on disk; the task remains registered with status
+   * `paused`. Resolves `false` if the task is unknown, already paused, or
+   * already finished.
+   */
+  pause(): Promise<boolean>;
+  /**
+   * Resume a paused download with the exact same options. yt-dlp continues
+   * from the `.part` file by default (byte-range where the source supports it,
+   * otherwise the file restarts). Resolves `false` if the task is unknown or
+   * not paused.
+   */
+  resume(): Promise<boolean>;
   getStatus(): Promise<DownloadStatus>;
   getProgress(): Promise<DownloadProgress | null>;
   addListener(event: 'progress', listener: (progress: DownloadProgress) => void): Subscription;

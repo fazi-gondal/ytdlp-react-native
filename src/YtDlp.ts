@@ -87,3 +87,29 @@ export async function cancel(taskId: string): Promise<boolean> {
     throw normalizeError(cause);
   }
 }
+
+/**
+ * Pause an in-flight download by task id. Returns `false` if the task is
+ * unknown, already paused, or already finished.
+ */
+export async function pause(taskId: string): Promise<boolean> {
+  try {
+    const native = requireNative();
+    return await native.pauseDownload(taskId);
+  } catch (cause) {
+    throw normalizeError(cause);
+  }
+}
+
+/**
+ * Resume a paused download by task id. Returns `false` if the task is unknown
+ * or not paused. yt-dlp continues from the partial `.part` file by default.
+ */
+export async function resume(taskId: string): Promise<boolean> {
+  try {
+    const native = requireNative();
+    return await native.resumeDownload(taskId);
+  } catch (cause) {
+    throw normalizeError(cause);
+  }
+}
